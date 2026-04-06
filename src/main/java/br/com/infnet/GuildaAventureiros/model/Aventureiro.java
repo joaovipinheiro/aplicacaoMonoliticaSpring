@@ -8,11 +8,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Aventureiro {
-    private long id;
+    private Long id;
     private String nome;
-    private String classe;
-    private int nivel;
+    private Classe classe;
+    private Integer nivel;
     private boolean ativo;
     private Companheiro companheiro;
-
 }
