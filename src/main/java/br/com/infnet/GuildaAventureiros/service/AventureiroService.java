@@ -8,6 +8,8 @@ import br.com.infnet.GuildaAventureiros.model.Classe;
 import br.com.infnet.GuildaAventureiros.model.Companheiro;
 import br.com.infnet.GuildaAventureiros.model.Especie;
 import br.com.infnet.GuildaAventureiros.repository.AventureiroRepository;
+import br.com.infnet.GuildaAventureiros.repository.OrganizacaoRepository;
+import br.com.infnet.GuildaAventureiros.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -18,25 +20,20 @@ import java.util.stream.Collectors;
 public class AventureiroService {
 
     private final AventureiroRepository repository;
+    private final OrganizacaoRepository organizacaoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public AventureiroService(AventureiroRepository repository) {
+    public AventureiroService(AventureiroRepository repository,
+                              OrganizacaoRepository organizacaoRepository,
+                              UsuarioRepository usuarioRepository) {
         this.repository = repository;
+        this.organizacaoRepository = organizacaoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public List<Aventureiro> listarTodosFiltrados(String classeFiltro, Boolean ativo, Integer nivelMinimo) {
-        Classe classeEnum = null;
-        if (classeFiltro != null && !classeFiltro.isBlank()) {
-            try {
-                classeEnum = Classe.valueOf(classeFiltro.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                return List.of();
-            }
-        }
-
-        final Classe filtroClasseFinal = classeEnum;
-
-        return repository.getTodos().stream()
-                .filter(a -> (filtroClasseFinal == null || a.getClasse().equals(filtroClasseFinal)))
+        return repository.findAll().stream()
+                .filter(a -> (classeFiltro == null || a.getClasse().name().equalsIgnoreCase(classeFiltro)))
                 .filter(a -> (ativo == null || a.isAtivo() == ativo))
                 .filter(a -> (nivelMinimo == null || a.getNivel() >= nivelMinimo))
                 .sorted(Comparator.comparing(Aventureiro::getId))
@@ -44,16 +41,20 @@ public class AventureiroService {
     }
 
     public Aventureiro buscarPorId(Long id) {
-        return repository.getTodos().stream()
-                .filter(a -> a.getId().equals(id))
-                .findFirst()
+        return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aventureiro com ID " + id + " não encontrado."));
     }
 
     public Aventureiro criar(AventureiroDTO dto) {
-        Classe classeEnum = Classe.valueOf(dto.getClasse().toUpperCase());
-        Aventureiro novo = new Aventureiro(null, dto.getNome(), classeEnum, dto.getNivel(), true, null);
-        return repository.salvar(novo);
+        Aventureiro novo = new Aventureiro();
+        novo.setNome(dto.getNome());
+        novo.setClasse(Classe.valueOf(dto.getClasse().toUpperCase()));
+        novo.setNivel(dto.getNivel());
+        novo.setAtivo(true);
+        novo.setOrganizacao(organizacaoRepository.findById(1L).orElseThrow());
+        novo.setUsuarioResponsavel(usuarioRepository.findById(1L).orElseThrow());
+
+        return repository.save(novo);
     }
 
     public Aventureiro atualizar(Long id, AventureiroDTO dto) {
@@ -61,30 +62,37 @@ public class AventureiroService {
         existente.setNome(dto.getNome());
         existente.setClasse(Classe.valueOf(dto.getClasse().toUpperCase()));
         existente.setNivel(dto.getNivel());
-        return existente;
+        return repository.save(existente);
     }
 
     public void inativar(Long id) {
         Aventureiro existente = buscarPorId(id);
         existente.setAtivo(false);
+        repository.save(existente);
     }
 
     public void ativar(Long id) {
         Aventureiro existente = buscarPorId(id);
         existente.setAtivo(true);
+        repository.save(existente);
     }
 
     public Aventureiro definirCompanheiro(Long idAventureiro, CompanheiroDTO dto) {
         Aventureiro aventureiro = buscarPorId(idAventureiro);
-        Especie especieEnum = Especie.valueOf(dto.getEspecie().toUpperCase());
-        Companheiro companheiro = new Companheiro(dto.getNome(), especieEnum, dto.getLealdade());
 
+        Companheiro companheiro = new Companheiro();
+        companheiro.setNome(dto.getNome());
+        companheiro.setEspecie(Especie.valueOf(dto.getEspecie().toUpperCase()));
+        companheiro.setLealdade(dto.getLealdade());
+        companheiro.setAventureiro(aventureiro);
         aventureiro.setCompanheiro(companheiro);
-        return aventureiro;
+
+        return repository.save(aventureiro);
     }
 
     public void removerCompanheiro(Long idAventureiro) {
         Aventureiro aventureiro = buscarPorId(idAventureiro);
         aventureiro.setCompanheiro(null);
+        repository.save(aventureiro);
     }
 }
