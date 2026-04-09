@@ -1,5 +1,6 @@
 package br.com.infnet.GuildaAventureiros.model;
 
+<<<<<<< HEAD
 import br.com.infnet.GuildaAventureiros.model.audit.Organizacao;
 import br.com.infnet.GuildaAventureiros.model.audit.Usuario;
 import jakarta.persistence.*;
@@ -65,3 +66,20 @@ public class Aventureiro {
 }
 
 
+=======
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class Aventureiro {
+    private Long id;
+    private String nome;
+    private Classe classe;
+    private Integer nivel;
+    private boolean ativo;
+    private Companheiro companheiro;
+}
+>>>>>>> 8f4b7c951cd22e54449dae4fb03e01db9c4068c4

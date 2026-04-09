@@ -1,13 +1,19 @@
 package br.com.infnet.GuildaAventureiros.model;
 
+<<<<<<< HEAD
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+=======
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+>>>>>>> 8f4b7c951cd22e54449dae4fb03e01db9c4068c4
 import lombok.Setter;
 
 @Getter
 @Setter
+<<<<<<< HEAD
 @NoArgsConstructor
 @AllArgsConstructor@Entity
 @Table(name = "companheiros", schema = "aventura")
@@ -28,5 +34,11 @@ public class Companheiro    {
     private Especie especie;
 
     @Column(nullable = false)
+=======
+@AllArgsConstructor
+public class Companheiro    {
+    private String nome;
+    private Especie especie;
+>>>>>>> 8f4b7c951cd22e54449dae4fb03e01db9c4068c4
     private Integer lealdade;
 }
